@@ -19,4 +19,10 @@ def extract_events(file_name):
         events.append(event_dict)
     return events
 
-# print(extract_events("ical_princeton.ics")[0])
+if __name__ == "__main__":
+    import json
+
+    events = extract_events("ical_princeton.ics")
+
+    with open("events.json", "w") as fp:
+        json.dump(events, fp)
