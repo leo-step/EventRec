@@ -1,10 +1,13 @@
 import re
+from datetime import datetime
 
 def extract_events(file_name):
     with open(file_name, "r") as fp:
         text = ''.join(fp.readlines())
     pattern = re.compile(r'BEGIN:VEVENT\n(.*?)END:VEVENT', re.DOTALL)
     matches = re.findall(pattern, text)
+    dt1 = datetime(2023, 11, 28, 8, 15, 17)
+    dt2 = datetime(2023, 12, 31, 9, 30, 45)
     events = []
     for match in matches:
         event_dict = {}
@@ -16,7 +19,10 @@ def extract_events(file_name):
                 continue
             value = ':'.join(split[1:])
             event_dict[key] = value
-        events.append(event_dict)
+
+        start = datetime.strptime(event_dict["DTSTART"], "%Y%m%dT%H%M%SZ")
+        if dt1 <= start <= dt2:
+            events.append(event_dict)
     return events
 
 if __name__ == "__main__":
