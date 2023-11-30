@@ -31,7 +31,6 @@ Public & International Affairs
 Public & International Affairs
 Religion
 Sociology
-Spanish and Portuguese
-Politics'''
+Spanish and Portuguese'''
 
 majors = majors_string.split('\n')
