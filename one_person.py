@@ -15,7 +15,7 @@ event_val_vectors = np.load("dataset/event_val_vectors.npy")
 print(people[50])
 print()
 
-train_event_indexes = dataset["train"]["50"][:7]
+train_event_indexes = dataset["train"]["50"]
 train_events = get_results(events["train"], train_event_indexes)
 # for event in train_events:
 #     print(event["SUMMARY;ENCODING=QUOTED-PRINTABLE"])
@@ -70,7 +70,7 @@ for event in val_events:
     print(event["DESCRIPTION"])
     print()
 print("--------------")
-input()
+# input()
 # for each person, go thru their events in order, apply update rule to their person vector
 events_indexes = train_event_indexes[::-1]
 for event_idx in events_indexes:
@@ -78,17 +78,17 @@ for event_idx in events_indexes:
     print(train_event["SUMMARY;ENCODING=QUOTED-PRINTABLE"])
     print(train_event["DESCRIPTION"])
     print("^^^^^^")
-    vector = update(vector, event_train_vectors[event_idx], 0.1)
+    vector = update(vector, event_train_vectors[event_idx], 0.3)
 
     # save trained people vectors
-    val_indexes = top_k_similar(vector, 10, event_val_vectors)
+    val_indexes = top_k_similar(vector, 5, event_val_vectors)
 
     val_events = get_results(events["val"], val_indexes)
     for event in val_events:
         print(event["SUMMARY;ENCODING=QUOTED-PRINTABLE"])
         print(event["DESCRIPTION"])
         print()
-    print("--------------")
-    input()
+    # print("--------------")
+    # input()
 
 

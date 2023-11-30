@@ -1,6 +1,9 @@
 import re
 from datetime import datetime
 
+def remove_parentheses(input_string):
+    return re.sub(r'\([^)]*\)', '', input_string).strip()
+
 def extract_events(file_name):
     with open(file_name, "r") as fp:
         text = ''.join(fp.readlines())
@@ -16,6 +19,7 @@ def extract_events(file_name):
     # count_train = 0
     # count_val = 0
     # count_test = 0
+    event_names = set()
     for match in matches:
         event_dict = {}
         lines = match.split('\n')
@@ -26,6 +30,12 @@ def extract_events(file_name):
                 continue
             value = ':'.join(split[1:])
             event_dict[key] = value
+
+        name = remove_parentheses(event_dict["SUMMARY;ENCODING=QUOTED-PRINTABLE"])
+        if name in event_names:
+            continue
+        else:
+            event_names.add(name)
 
         start = datetime.strptime(event_dict["DTSTART"], "%Y%m%dT%H%M%SZ")
 
@@ -41,7 +51,7 @@ def extract_events(file_name):
 if __name__ == "__main__":
     import json
 
-    events_train, events_val, events_test = extract_events("ical_princeton.ics")
+    events_train, events_val, events_test = extract_events("dataset_creation/ical_princeton.ics")
 
     events = {
         "train": events_train,
@@ -49,5 +59,5 @@ if __name__ == "__main__":
         "test": events_test
     }
 
-    with open("events.json", "w") as fp:
+    with open("dataset/events.json", "w") as fp:
         json.dump(events, fp)

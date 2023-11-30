@@ -44,7 +44,7 @@ def create_dataset():
 
     for split in dataset:
         event_vecs = np.load(f"dataset/event_{split}_vectors.npy")
-        k = 15 if split == "train" else 10
+        k = 10 if split == "train" else 5
         for i, person_vec in enumerate(people_vecs):
             event_indexes = top_k_similar(person_vec, k, event_vecs)
             dataset[split][i] = event_indexes.tolist()
@@ -53,4 +53,5 @@ def create_dataset():
         json.dump(dataset, fp)
 
 if __name__ == "__main__":
+    embed_events()
     create_dataset()
