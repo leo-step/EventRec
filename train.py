@@ -4,7 +4,6 @@
 # initial vector is just major embedding
 
 from utils import *
-from majors import majors
 import json
 import os
 
@@ -17,31 +16,14 @@ def train(alpha=0.1):
         people = json.load(fp)
     with open("dataset/dataset.json") as fp:
         dataset = json.load(fp)["train"]
+    with open("dataset/majors.json") as fp:
+        majors = json.load(fp)
     event_vectors = np.load("dataset/event_train_vectors.npy")
 
     if not os.path.exists("initial_vectors.npy"):
         people_vecs = []
-        major_keywords = []
-        for major in majors:
-            keyword = major.split(' ')[0]
-            major_keywords.append(keyword)
-            major_keywords.append(keyword.lower())
-        # print(major_keywords)
         for i, person_text in enumerate(people):
-            # get initial vector (embed their major)
-            if i % 10 == 1:
-                print(i, "/", len(people))
-            major = None
-            # text_set = set(person_text.split(' '))
-            for i, keyword in enumerate(major_keywords):
-                if keyword in person_text:
-                    major = majors[i // 2]
-                    break
-            if not major:
-                print(person_text)
-                raise ValueError("No major found")
-
-            vector = get_embedding(major)
+            vector = get_embedding(majors[i])
             people_vecs.append(vector)
 
         np.save("initial_vectors.npy", np.array(people_vecs))
@@ -85,6 +67,8 @@ def val():
 
 
 if __name__ == "__main__":
+    train()
+    exit()
     # val()
     # exit()
     initial_vectors = np.load("initial_vectors.npy")
