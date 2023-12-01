@@ -55,8 +55,74 @@ class AlphaModel:
         return predictions
 
 
+def recall(predictions, true):
+    num_people = len(predictions)
+    recall_sum = 0
+    for i in range(num_people):
+        pred = set(predictions[i])
+        real = set(true[str(i)])
+        num_correct = len(pred.intersection(real))
+        total = len(real)
+        recall_sum += num_correct / total
+    return recall_sum / num_people
+
+
+def precision(predictions, true):
+    num_people = len(predictions)
+    precision_sum = 0
+    for i in range(num_people):
+        pred = set(predictions[i])
+        real = set(true[str(i)])
+        num_correct = len(pred.intersection(real))
+        k = len(predictions[0])
+        precision_sum += num_correct / k
+    return precision_sum / num_people
+
+
 if __name__ == "__main__":
     val_vectors = np.load("dataset/event_val_vectors.npy")
+    test_vectors = np.load("dataset/event_test_vectors.npy")
+
+    # max_alpha = 0
+    # max_rc = 0
+    # for alpha in np.linspace(0, 0.5, num=50):
+    #     model = AlphaModel(alpha=alpha)
+    #     model.train()
+    #     predictions = model.predict(val_vectors, k=10)
+    #     rc = recall(predictions, dataset["val"])
+    #     if rc > max_rc:
+    #         max_alpha = alpha
+    #         max_rc = rc
+
+    # print(max_alpha, max_rc)
+
     model = MatrixModel()
     model.train()
-    print(model.predict(val_vectors, k=10))
+    predictions = model.predict(val_vectors, k=10)
+    print("MATRIX MODEL")
+    print("VAL:", recall(predictions, dataset["val"]), precision(predictions, dataset["val"]))
+    predictions = model.predict(test_vectors, k=10)
+    print("TEST:", recall(predictions, dataset["test"]), precision(predictions, dataset["test"]))
+    print()
+
+    model = AlphaModel(alpha=0.1)
+    model.train()
+    predictions = model.predict(val_vectors, k=10)
+
+    print("ALPHA MODEL (a=0.1)")
+    print("VAL:", recall(predictions, dataset["val"]), precision(predictions, dataset["val"]))
+    predictions = model.predict(test_vectors, k=10)
+    print("TEST:", recall(predictions, dataset["test"]), precision(predictions, dataset["test"]))
+    print()
+
+'''
+
+MATRIX MODEL
+VAL: 0.38470588235294145 0.19235294117647073
+TEST: 0.40000000000000024 0.20000000000000012
+
+ALPHA MODEL (a=0.1)
+VAL: 0.4741176470588236 0.2370588235294118
+TEST: 0.5599999999999996 0.2799999999999998
+
+'''

@@ -13,7 +13,7 @@ event_val_vectors = np.load("dataset/event_val_vectors.npy")
 
 # all for person 0
 
-person_number = 20
+person_number = 83
 
 print(people[person_number])
 print()
@@ -29,7 +29,7 @@ train_events = get_results(events["train"], train_event_indexes)
 train_matrix = event_train_vectors[train_event_indexes]
 print(train_matrix.shape)
 print(event_val_vectors.shape)
-val_indexes = np.max((event_val_vectors @ train_matrix.T), axis=1).argsort()[-10:][::-1]
+val_indexes = np.max((event_val_vectors @ train_matrix.T), axis=1).argsort()[-5:][::-1]
 val_events = get_results(events["val"], val_indexes)
 for event in val_events:
     print(event["SUMMARY;ENCODING=QUOTED-PRINTABLE"])
