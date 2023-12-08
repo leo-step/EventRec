@@ -1,5 +1,6 @@
 import json
 from utils import *
+import pinecone
 
 with open("dataset/dataset.json") as fp:
     dataset = json.load(fp)
@@ -29,30 +30,73 @@ class MatrixModel:
             predictions.append(np.max((test_vectors @ matrix.T), axis=1).argsort()[-k:][::-1])
         return predictions
 
-
 class AlphaModel:
-    def __init__(self, alpha=0.3):
+    def __init__(self, alpha=0.3, pinecone_index_name="alpha_model_index"):
         self.dataset = dataset["train"]
         self.event_vectors = event_train_vectors
         self.alpha = alpha
+        self.pinecone_index_name = pinecone_index_name
+        self.pinecone_index = None
 
     def update(self, person_vec, event_vec, alpha):
-        return (1-alpha)*person_vec + alpha*event_vec
+        return (1 - alpha) * person_vec + alpha * event_vec
+
+    def create_pinecone_index(self):
+        pinecone.init(api_key="")
+        pinecone.create_index(index_name=self.pinecone_index_name, dimension=len(self.event_vectors[0]))
+
+    def index_data(self):
+        if not self.pinecone_index:
+            self.create_pinecone_index()
+
+        for person_num, train_event_indexes in self.dataset.items():
+            vector_sum = self.vectors[person_num]
+            for event_idx in train_event_indexes:
+                vector_sum = self.update(vector_sum, self.event_vectors[event_idx], self.alpha)
+
+            # Index the vector for the person
+            self.pinecone_index.upsert(item_ids=[str(person_num)], vectors=[vector_sum])
 
     def train(self):
         self.vectors = major_vectors.copy()
-        for person in self.dataset:
-            person_number = int(person)
-            train_event_indexes = self.dataset[str(person_number)]
-            sorted_indexes = sorted(train_event_indexes)
-            for event_idx in sorted_indexes:
-                self.vectors[person_number] = self.update(self.vectors[person_number], self.event_vectors[event_idx], self.alpha)
+        self.index_data()
 
-    def predict(self, test_vectors, k=5):
+    def predict(self, k=5):
+        if not self.pinecone_index:
+            self.create_pinecone_index()
+
         predictions = []
+
         for vector in self.vectors:
-            predictions.append(top_k_similar(vector, k, test_vectors))
+            query_result = self.pinecone_index.query(queries=[vector], top_k=k)
+            similar_items = [result.id for result in query_result[0].matches]
+            predictions.append(similar_items)
+
         return predictions
+
+# class AlphaModel:
+#     def __init__(self, alpha=0.3):
+#         self.dataset = dataset["train"]
+#         self.event_vectors = event_train_vectors
+#         self.alpha = alpha
+
+#     def update(self, person_vec, event_vec, alpha):
+#         return (1-alpha)*person_vec + alpha*event_vec
+
+#     def train(self):
+#         self.vectors = major_vectors.copy()
+#         for person in self.dataset:
+#             person_number = int(person)
+#             train_event_indexes = self.dataset[str(person_number)]
+#             sorted_indexes = sorted(train_event_indexes)
+#             for event_idx in sorted_indexes:
+#                 self.vectors[person_number] = self.update(self.vectors[person_number], self.event_vectors[event_idx], self.alpha)
+
+#     def predict(self, test_vectors, k=5):
+#         predictions = []
+#         for vector in self.vectors:
+#             predictions.append(top_k_similar(vector, k, test_vectors))
+#         return predictions
 
 
 def recall(predictions, true):

@@ -1,6 +1,7 @@
 import json
 from utils import *
 from dataset_creation.majors import majors
+from models import AlphaModel
 
 with open("dataset/dataset.json") as fp:
     dataset = json.load(fp)
@@ -8,29 +9,34 @@ with open("dataset/events.json") as fp:
     events = json.load(fp)
 with open("dataset/people.json") as fp:
     people = json.load(fp)
+people_vectors = np.load("dataset/people_vectors.npy")
 event_train_vectors = np.load("dataset/event_train_vectors.npy")
 event_val_vectors = np.load("dataset/event_val_vectors.npy")
 
 # all for person 0
 
-person_number = 83
-
+person_number = 5
+print(people_vectors[person_number])
 print(people[person_number])
 print()
 
 train_event_indexes = dataset["train"][str(person_number)]
 train_events = get_results(events["train"], train_event_indexes)
-# for event in train_events:
-#     print(event["SUMMARY;ENCODING=QUOTED-PRINTABLE"])
-#     print(event["DESCRIPTION"])
-#     print()
+print(event_train_vectors[train_event_indexes[0]])
+for event in train_events:
+    print(event["SUMMARY;ENCODING=QUOTED-PRINTABLE"])
+    print(event["DESCRIPTION"])
+    print()
 
+model = AlphaModel(alpha=0.1)
+model.train()
+predictions = model.predict(event_val_vectors, k=10)
 
-train_matrix = event_train_vectors[train_event_indexes]
-print(train_matrix.shape)
-print(event_val_vectors.shape)
-val_indexes = np.max((event_val_vectors @ train_matrix.T), axis=1).argsort()[-5:][::-1]
-val_events = get_results(events["val"], val_indexes)
+# train_matrix = event_train_vectors[train_event_indexes]
+# print(train_matrix.shape)
+# print(event_val_vectors.shape)
+# val_indexes = np.max((event_val_vectors @ train_matrix.T), axis=1).argsort()[-5:][::-1]
+val_events = get_results(events["val"], predictions[person_number])
 for event in val_events:
     print(event["SUMMARY;ENCODING=QUOTED-PRINTABLE"])
     print(event["DESCRIPTION"])
