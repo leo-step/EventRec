@@ -5,7 +5,7 @@ with open("dataset/people.json", "r") as fp:
     people = json.load(fp)
 
 def get_major(person_text):
-    client = OpenAI(api_key='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')
+    client = OpenAI(api_key='')
 
     response = client.chat.completions.create(
     model="gpt-4-1106-preview",

@@ -1,7 +1,7 @@
 import numpy as np
 from openai import OpenAI
 
-client = OpenAI(api_key="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")
+client = OpenAI(api_key="")
 
 # returns top k similar vector indexes
 def top_k_similar(x, k, vecs):

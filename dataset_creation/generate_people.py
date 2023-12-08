@@ -2,7 +2,7 @@
 from openai import OpenAI
 from majors import majors
 
-client = OpenAI(api_key='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')
+client = OpenAI(api_key='')
 
 def generate_people(major):
     response = client.chat.completions.create(
